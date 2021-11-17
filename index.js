@@ -8,33 +8,36 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 
+if(!process.env.HEARTBEAT) {
+    console.error('Error: node command without assign HEARTBEAT=string');
+    return;
+}
+
+const heartbeat = process.env.HEARTBEAT;
+console.log('process.env.HEARTBEAT: ' + heartbeat);
+
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
 io.on('connection', (socket) => {
-    console.log('a user connected');
-    socket.on('chat message', (msg) => {
-        console.log('message: ' + msg);
-        io.emit('chat message', msg);
-      });
+    console.log('a client connected');
 
     socket.on('disconnect', () => {
-      console.log('user disconnected');
+      console.log('a client disconnected');
     });
-
 });
 
 
 const heartBeat = () => {
-    const heartbeat = {
+    const data = {
         ip: ip.address(),
         status: 'running',
         timestamp: moment().format('YYYY-MM-DD HH:mm:ss')
     };
 
     // const hb = 
-    io.emit('heartbeat', heartbeat);
+    io.emit(heartbeat, data);
 }
 
 setInterval(heartBeat, 1000);
